@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>二次育肥成本计算器</title>
+    <style>
+        :root {
+            --primary: #3498db;
+            --secondary: #2ecc71;
+            --accent: #e67e22;
+            --text: #2c3e50;
+            --bg: #f8f9fa;
+            --gap: 1.5rem;
+            --positive: #2ecc71;
+            --negative: #e74c3c;
+            --error: #e74c3c;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            padding: var(--gap);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary);
+            margin-bottom: 2rem;
+            font-size: 2.2rem;
+            position: relative;
+            padding-bottom: 1rem;
+        }
+
+        h1::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 3px;
+            background: var(--accent);
+        }
+
+        .calculator-card {
+            background: white;
+            border-radius: 12px;
+            padding: var(--gap);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            margin-bottom: var(--gap);
+        }
+
+        .input-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: var(--gap);
+            align-items: end;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        label {
+            font-size: 0.9rem;
+            color: #666;
+            font-weight: 500;
+        }
+
+        input {
+            padding: 0.8rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+        }
+
+        .default-param {
+            background-color: #f8f9fa;
+            color: #666;
+            border-color: #d3d3d3;
+        }
+
+        input:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        /* 错误提示样式 */
+        .error-message {
+            color: var(--error);
+            font-size: 0.8rem;
+            margin-top: 4px;
+            display: none;
+        }
+
+        .error-border {
+            border-color: var(--error) !important;
+        }
+
+        button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            width: 100%;
+            margin-top: 1.5rem;
+        }
+
+        button:hover {
+            background: #2980b9;
+            transform: translateY(-1px);
+        }
+
+        .result-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .result-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            border-left: 4px solid var(--secondary);
+        }
+
+        .result-label {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 0.5rem;
+        }
+
+        .result-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            transition: color 0.3s ease;
+        }
+
+        .positive {
+            color: var(--positive) !important;
+        }
+
+        .negative {
+            color: var(--negative) !important;
+        }
+
+        .result-unit {
+            font-size: 1rem;
+            color: #666;
+            margin-left: 0.3rem;
+        }
+
+        @media (min-width: 768px) {
+            .input-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            button {
+                width: auto;
+                margin-left: auto;
+            }
+
+            .result-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 767px) {
+            :root {
+                --gap: 1rem;
+            }
+
+            h1 {
+                font-size: 1.8rem;
+            }
+
+            .result-value {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>二次育肥成本计算器</h1>
+        
+        <div class="calculator-card">
+            <div class="input-grid">
+                <!-- 必填参数 -->
+                <div class="input-group">
+                    <label>购买体重 (斤)</label>
+                    <input type="number" id="weight" placeholder="220-230" step="1" required>
+                    <span class="error-message" id="weight-error">请输入购买体重</span>
+                </div>
+                <div class="input-group">
+                    <label>购买单价 (元/斤)</label>
+                    <input type="number" id="price" step="0.1" required>
+                    <span class="error-message" id="price-error">请输入购买单价</span>
+                </div>
+                <div class="input-group">
+                    <label>饲料单价 (元/斤)</label>
+                    <input type="number" id="feedPrice" step="0.1" required>
+                    <span class="error-message" id="feedPrice-error">请输入饲料单价</span>
+                </div>
+
+                <!-- 默认参数 -->
+                <div class="input-group">
+                    <label>每日代养费 (元)</label>
+                    <input class="default-param" type="number" id="careFee" value="2.00" step="0.1">
+                </div>
+                <div class="input-group">
+                    <label>每头药费 (元)</label>
+                    <input class="default-param" type="number" id="medicine" value="10.00" step="1">
+                </div>
+                <div class="input-group">
+                    <label>运输费 (元/斤)</label>
+                    <input class="default-param" type="number" id="transport" value="0.22" step="0.01">
+                </div>
+
+                <div class="input-group">
+                    <label>每日饲料量 (斤)</label>
+                    <input class="default-param" type="number" id="dailyFeed" value="7.0" step="0.1">
+                </div>
+                <div class="input-group">
+                    <label>首月料肉比</label>
+                    <input class="default-param" type="number" id="fcr1" value="3.75" step="0.1">
+                </div>
+                <div class="input-group">
+                    <label>次月料肉比</label>
+                    <input class="default-param" type="number" id="fcr2" value="4.10" step="0.1">
+                </div>
+            </div>
+            <button onclick="validateForm()">立即计算</button>
+        </div>
+
+        <div class="result-grid">
+            <div class="result-card">
+                <div class="result-label">1个月总成本</div>
+                <div class="result-value">
+                    <span id="total1">0.00</span>
+                    <span class="result-unit">元</span>
+                </div>
+            </div>
+            <div class="result-card">
+                <div class="result-label">1个月单价</div>
+                <div class="result-value">
+                    <span id="unit1">0.00</span>
+                    <span class="result-unit">元/斤</span>
+                </div>
+            </div>
+            <div class="result-card">
+                <div class="result-label">2个月总成本</div>
+                <div class="result-value">
+                    <span id="total2">0.00</span>
+                    <span class="result-unit">元</span>
+                </div>
+            </div>
+            <div class="result-card">
+                <div class="result-label">2个月单价</div>
+                <div class="result-value">
+                    <span id="unit2">0.00</span>
+                    <span class="result-unit">元/斤</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 默认参数交互逻辑
+        document.querySelectorAll('.default-param').forEach(input => {
+            input.dataset.default = input.value;
+            input.addEventListener('input', function() {
+                this.value !== this.dataset.default 
+                    ? this.classList.remove('default-param') 
+                    : this.classList.add('default-param');
+            });
+            input.addEventListener('blur', function() {
+                if (this.value === '') {
+                    this.value = this.dataset.default;
+                    this.classList.add('default-param');
+                }
+            });
+        });
+
+        // 必填字段验证
+        const requiredFields = [
+            { id: 'weight', errorId: 'weight-error' },
+            { id: 'price', errorId: 'price-error' },
+            { id: 'feedPrice', errorId: 'feedPrice-error' }
+        ];
+
+        // 实时输入验证
+        requiredFields.forEach(field => {
+            const input = document.getElementById(field.id);
+            input.addEventListener('input', () => {
+                if (input.value.trim() !== '') {
+                    hideError(input, field.errorId);
+                }
+            });
+        });
+
+        function validateForm() {
+            let isValid = true;
+            
+            requiredFields.forEach(field => {
+                const input = document.getElementById(field.id);
+                if (input.value.trim() === '') {
+                    showError(input, field.errorId);
+                    isValid = false;
+                } else {
+                    hideError(input, field.errorId);
+                }
+            });
+
+            if (isValid) {
+                calculate();
+            }
+        }
+
+        function showError(input, errorId) {
+            input.classList.add('error-border');
+            document.getElementById(errorId).style.display = 'block';
+        }
+
+        function hideError(input, errorId) {
+            input.classList.remove('error-border');
+            document.getElementById(errorId).style.display = 'none';
+        }
+
+        // 计算函数
+        function calculate() {
+            // 获取参数值
+            const params = {
+                weight: parseFloat(document.getElementById('weight').value),
+                price: parseFloat(document.getElementById('price').value),
+                feedPrice: parseFloat(document.getElementById('feedPrice').value),
+                careFee: parseFloat(document.getElementById('careFee').value) || 2.00,
+                medicine: parseFloat(document.getElementById('medicine').value) || 10.00,
+                transport: parseFloat(document.getElementById('transport').value) || 0.22,
+                dailyFeed: parseFloat(document.getElementById('dailyFeed').value) || 7.0,
+                fcr1: parseFloat(document.getElementById('fcr1').value) || 3.75,
+                fcr2: parseFloat(document.getElementById('fcr2').value) || 4.10
+            };
+
+            // 计算函数
+            const calculateStage = (days, fcr) => ({
+                feed: params.dailyFeed * days,
+                gain: (params.dailyFeed * days) / fcr
+            });
+
+            // 第一阶段计算
+            const stage1 = calculateStage(30, params.fcr1);
+            const finalWeight1 = params.weight + stage1.gain;
+            const cost1 = params.weight * (params.price + params.transport) +
+                        params.medicine +
+                        params.careFee * 30 +
+                        stage1.feed * params.feedPrice;
+
+            // 第二阶段计算
+            const stage2 = calculateStage(30, params.fcr2);
+            const finalWeight2 = finalWeight1 + stage2.gain;
+            const cost2 = cost1 + 
+                        params.careFee * 30 +
+                        stage2.feed * params.feedPrice;
+
+            // 格式化显示
+            const formatter = new Intl.NumberFormat('zh-CN', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+
+            // 更新显示结果
+            document.getElementById('total1').textContent = formatter.format(cost1);
+            document.getElementById('total2').textContent = formatter.format(cost2);
+
+            // 设置单价颜色
+            const setPriceColor = (elementId, unitPrice) => {
+                const element = document.getElementById(elementId);
+                element.classList.remove('positive', 'negative');
+                element.classList.add(unitPrice < params.price ? 'positive' : 'negative');
+            };
+
+            const unit1 = cost1 / finalWeight1;
+            const unit2 = cost2 / finalWeight2;
+            document.getElementById('unit1').textContent = formatter.format(unit1);
+            document.getElementById('unit2').textContent = formatter.format(unit2);
+            setPriceColor('unit1', unit1);
+            setPriceColor('unit2', unit2);
+        }
+    </script>
+</body>
+</html>
