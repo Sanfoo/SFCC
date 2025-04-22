@@ -3,427 +3,334 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>二次育肥成本计算器</title>
+    <title>智能养殖利润分析系统</title>
     <style>
-        :root {
-            --primary: #3498db;
-            --secondary: #2ecc71;
-            --accent: #e67e22;
-            --text: #2c3e50;
-            --bg: #f8f9fa;
-            --gap: 1.5rem;
-            --positive: #2ecc71;
-            --negative: #e74c3c;
-            --error: #e74c3c;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            font-family: 'Helvetica Neue', system-ui, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            line-height: 1.6;
-            padding: var(--gap);
-            min-height: 100vh;
-        }
-
         .container {
             max-width: 1200px;
             margin: 0 auto;
+            padding: 20px;
         }
-
-        h1 {
-            text-align: center;
-            color: var(--primary);
-            margin-bottom: 2rem;
-            font-size: 2.2rem;
-            position: relative;
-            padding-bottom: 1rem;
-        }
-
-        h1::after {
-            content: "";
-            position: absolute;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 80px;
-            height: 3px;
-            background: var(--accent);
-        }
-
-        .calculator-card {
-            background: white;
-            border-radius: 12px;
-            padding: var(--gap);
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-            margin-bottom: var(--gap);
-        }
-
-        .input-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: var(--gap);
-            align-items: end;
-        }
-
-        .input-group {
+        .input-section {
             display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
+            flex-wrap: wrap;
+            gap: 20px;
         }
-
+        .input-group {
+            flex: 1 1 300px;
+            display: flex;
+            align-items: center;
+        }
         label {
-            font-size: 0.9rem;
-            color: #666;
-            font-weight: 500;
+            width: 180px;
+            text-align: right;
+            margin-right: 10px;
         }
-
         input {
-            padding: 0.8rem;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 1rem;
-            transition: all 0.2s ease;
+            padding: 8px;
+            width: 150px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
         }
-
-        .error-message {
-            color: var(--error);
-            font-size: 0.8rem;
-            margin-top: 4px;
-            display: none;
-        }
-
-        .error-border {
-            border-color: var(--error) !important;
-        }
-
         button {
-            background: var(--primary);
+            padding: 12px 25px;
+            background-color: #4CAF50;
             color: white;
             border: none;
-            padding: 1rem 2rem;
-            border-radius: 8px;
-            font-size: 1.1rem;
+            border-radius: 4px;
             cursor: pointer;
-            transition: all 0.2s ease;
-            width: 100%;
-            margin-top: 1.5rem;
+            font-size: 16px;
+            transition: background-color 0.3s;
+            margin-top: 20px;
         }
-
         button:hover {
-            background: #2980b9;
-            transform: translateY(-1px);
+            background-color: #45a049;
         }
-
-        .result-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 1.5rem;
-            margin-top: 2rem;
+        .table-wrapper {
+            overflow-x: auto;
+            margin-top: 25px;
         }
-
-        .result-card {
-            background: white;
-            border-radius: 12px;
-            padding: 1.5rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-            border-left: 4px solid var(--secondary);
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
-
-        .result-label {
-            font-size: 0.9rem;
-            color: #666;
-            margin-bottom: 0.5rem;
+        th, td {
+            padding: 12px;
+            text-align: center;
+            border: 1px solid #ddd;
         }
-
-        .result-value {
-            font-size: 1.4rem;
-            font-weight: 700;
-            transition: color 0.3s ease;
+        th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
         }
-
-        .positive {
-            color: var(--positive) !important;
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
         }
-
-        .negative {
-            color: var(--negative) !important;
+        .warning {
+            color: #dc3545;
+            margin-top: 10px;
         }
-
-        .result-unit {
-            font-size: 0.9rem;
-            color: #666;
-            margin-left: 0.3rem;
+        .currency::before {
+            content: "¥";
+            margin-right: 2px;
         }
-
-        .days-tag {
-            font-size: 0.8rem;
-            color: var(--primary);
-            margin-bottom: 0.5rem;
-            font-weight: bold;
-        }
-
-        @media (min-width: 768px) {
-            .input-grid {
-                grid-template-columns: repeat(3, 1fr);
+        @media (max-width: 768px) {
+            .input-group {
+                flex-direction: column;
+                align-items: flex-start;
             }
-
-            .result-grid {
-                grid-template-columns: repeat(3, 1fr);
-            }
-
-            button {
+            label {
+                text-align: left;
                 width: auto;
-                margin-left: auto;
             }
-        }
-
-        @media (max-width: 767px) {
-            :root {
-                --gap: 1rem;
-            }
-
-            h1 {
-                font-size: 1.8rem;
-            }
-
-            .result-value {
-                font-size: 1.2rem;
+            input {
+                width: 100%;
             }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>二次育肥成本计算器</h1>
-        
-        <div class="calculator-card">
-            <div class="input-grid">
-                <div class="input-group">
-                    <label>购买体重 (斤)</label>
-                    <input type="number" id="weight" placeholder="220-230" step="1" required>
-                    <span class="error-message" id="weight-error">请输入购买体重</span>
-                </div>
-                <div class="input-group">
-                    <label>购买单价 (元/斤)</label>
-                    <input type="number" id="price" step="0.1" required>
-                    <span class="error-message" id="price-error">请输入购买单价</span>
-                </div>
-                <div class="input-group">
-                    <label>饲料单价 (元/斤)</label>
-                    <input type="number" id="feedPrice" step="0.1" required>
-                    <span class="error-message" id="feedPrice-error">请输入饲料单价</span>
-                </div>
-
-                <div class="input-group">
-                    <label>日代养费 (元)</label>
-                    <input class="default-param" type="number" id="careFee" value="2.00" step="0.1">
-                </div>
-                <div class="input-group">
-                    <label>头均药费 (元)</label>
-                    <input class="default-param" type="number" id="medicine" value="10.00" step="1">
-                </div>
-                <div class="input-group">
-                    <label>运输费 (元/斤)</label>
-                    <input class="default-param" type="number" id="transport" value="0.22" step="0.01">
-                </div>
-
-                <div class="input-group">
-                    <label>日饲料量 (斤)</label>
-                    <input class="default-param" type="number" id="dailyFeed" value="7.0" step="0.1">
-                </div>
-                <div class="input-group">
-                    <label>首月料肉比</label>
-                    <input class="default-param" type="number" id="fcr1" value="3.75" step="0.1">
-                </div>
-                <div class="input-group">
-                    <label>次月料肉比</label>
-                    <input class="default-param" type="number" id="fcr2" value="4.10" step="0.1">
-                </div>
+        <h1>🐷 智能养殖利润分析系统</h1>
+        <div class="input-section">
+            <div class="input-group">
+                <label for="purchaseHeads">购入头数（头）:</label>
+                <input type="number" id="purchaseHeads" value="100">
             </div>
-            <button onclick="validateForm()">立即计算</button>
+            <div class="input-group">
+                <label for="weight">初始体重（斤/头）:</label>
+                <input type="number" id="weight" value="230" step="0.1">
+            </div>
+            <div class="input-group">
+                <label for="purchasePrice">购买单价（元/斤）:</label>
+                <input type="number" id="purchasePrice" value="8" step="0.01">
+            </div>
+            <div class="input-group">
+                <label for="feedPrice">饲料单价（元/斤）:</label>
+                <input type="number" id="feedPrice" value="1.3" step="0.01">
+            </div>
+            <div class="input-group">
+                <label for="salePrice">销售单价（元/斤）:</label>
+                <input type="number" id="salePrice" value="9.5" step="0.1">
+            </div>
+            <div class="input-group">
+                <label for="dailyFeed">每日饲料量（斤/头）:</label>
+                <input type="number" id="dailyFeed" value="7" step="0.1">
+            </div>
+            <div class="input-group">
+                <label for="fosteringFee">代养费（元/天/头）:</label>
+                <input type="number" id="fosteringFee" value="2" step="0.01">
+            </div>
+            <div class="input-group">
+                <label for="medicineFee">药费（元/头）:</label>
+                <input type="number" id="medicineFee" value="10" step="0.01">
+            </div>
+            <div class="input-group">
+                <label for="transportFee">运输费（元/斤）:</label>
+                <input type="number" id="transportFee" value="0.22" step="0.01">
+            </div>
+            <div class="input-group">
+                <label for="fcr1">前30天饲料转化率:</label>
+                <input type="number" id="fcr1" value="3.75" step="0.01">
+            </div>
+            <div class="input-group">
+                <label for="fcr2">后40天饲料转化率:</label>
+                <input type="number" id="fcr2" value="4.1" step="0.01">
+            </div>
+            <div class="input-group">
+                <label for="death1">前30天死亡率（%）:</label>
+                <input type="number" id="death1" value="0.5" step="0.01">
+            </div>
+            <div class="input-group">
+                <label for="death2">后40天死亡率（%）:</label>
+                <input type="number" id="death2" value="0.25" step="0.01">
+            </div>
         </div>
-
-        <div class="result-grid">
-            <!-- 动态生成的时间点结果 -->
-            <div class="result-card">
-                <div class="days-tag">第10天</div>
-                <div class="result-label">总成本</div>
-                <div class="result-value"><span id="total-10">0.00</span><span class="result-unit">元</span></div>
-                <div class="result-label">单位成本</div>
-                <div class="result-value"><span id="unit-10">0.00</span><span class="result-unit">元/斤</span></div>
-            </div>
-            <!-- 重复类似结构，修改天数 -->
-            <div class="result-card">
-                <div class="days-tag">第20天</div>
-                <div class="result-label">总成本</div>
-                <div class="result-value"><span id="total-20">0.00</span><span class="result-unit">元</span></div>
-                <div class="result-label">单位成本</div>
-                <div class="result-value"><span id="unit-20">0.00</span><span class="result-unit">元/斤</span></div>
-            </div>
-            <div class="result-card">
-                <div class="days-tag">第30天</div>
-                <div class="result-label">总成本</div>
-                <div class="result-value"><span id="total-30">0.00</span><span class="result-unit">元</span></div>
-                <div class="result-label">单位成本</div>
-                <div class="result-value"><span id="unit-30">0.00</span><span class="result-unit">元/斤</span></div>
-            </div>
-            <div class="result-card">
-                <div class="days-tag">第40天</div>
-                <div class="result-label">总成本</div>
-                <div class="result-value"><span id="total-40">0.00</span><span class="result-unit">元</span></div>
-                <div class="result-label">单位成本</div>
-                <div class="result-value"><span id="unit-40">0.00</span><span class="result-unit">元/斤</span></div>
-            </div>
-            <div class="result-card">
-                <div class="days-tag">第50天</div>
-                <div class="result-label">总成本</div>
-                <div class="result-value"><span id="total-50">0.00</span><span class="result-unit">元</span></div>
-                <div class="result-label">单位成本</div>
-                <div class="result-value"><span id="unit-50">0.00</span><span class="result-unit">元/斤</span></div>
-            </div>
-            <div class="result-card">
-                <div class="days-tag">第60天</div>
-                <div class="result-label">总成本</div>
-                <div class="result-value"><span id="total-60">0.00</span><span class="result-unit">元</span></div>
-                <div class="result-label">单位成本</div>
-                <div class="result-value"><span id="unit-60">0.00</span><span class="result-unit">元/斤</span></div>
-            </div>
-            <div class="result-card">
-                <div class="days-tag">第70天</div>
-                <div class="result-label">总成本</div>
-                <div class="result-value"><span id="total-70">0.00</span><span class="result-unit">元</span></div>
-                <div class="result-label">单位成本</div>
-                <div class="result-value"><span id="unit-70">0.00</span><span class="result-unit">元/斤</span></div>
-            </div>
+        <button onclick="calculate()">开始计算</button>
+        <div id="warning" class="warning"></div>
+        <div class="table-wrapper">
+            <table id="resultTable">
+                <thead>
+                    <tr>
+                        <th>天数</th>
+                        <th>存活数</th>
+                        <th>均重（斤）</th>
+                        <th>总成本</th>
+                        <th>销售额</th>
+                        <th>净利润</th>
+                        <th>头均成本</th>
+                        <th>头均利润</th>
+                        <th>头均售价</th>
+                        <th>单位成本</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
         </div>
     </div>
-
     <script>
-        // 默认参数交互逻辑
-        document.querySelectorAll('.default-param').forEach(input => {
-            input.dataset.default = input.value;
-            input.addEventListener('input', function() {
-                this.value !== this.dataset.default 
-                    ? this.classList.remove('default-param') 
-                    : this.classList.add('default-param');
-            });
-            input.addEventListener('blur', function() {
-                if (this.value === '') {
-                    this.value = this.dataset.default;
-                    this.classList.add('default-param');
-                }
-            });
-        });
-
-        // 必填字段验证
-        const requiredFields = [
-            { id: 'weight', errorId: 'weight-error' },
-            { id: 'price', errorId: 'price-error' },
-            { id: 'feedPrice', errorId: 'feedPrice-error' }
-        ];
-
-        // 实时输入验证
-        requiredFields.forEach(field => {
-            const input = document.getElementById(field.id);
-            input.addEventListener('input', () => {
-                if (input.value.trim() !== '') {
-                    hideError(input, field.errorId);
-                }
-            });
-        });
-
-        function validateForm() {
-            let isValid = true;
-            
-            requiredFields.forEach(field => {
-                const input = document.getElementById(field.id);
-                if (input.value.trim() === '') {
-                    showError(input, field.errorId);
-                    isValid = false;
-                } else {
-                    hideError(input, field.errorId);
-                }
-            });
-
-            if (isValid) {
-                calculate();
-            }
-        }
-
-        function showError(input, errorId) {
-            input.classList.add('error-border');
-            document.getElementById(errorId).style.display = 'block';
-        }
-
-        function hideError(input, errorId) {
-            input.classList.remove('error-border');
-            document.getElementById(errorId).style.display = 'none';
-        }
-
-        // 新计算逻辑
         function calculate() {
-            const params = {
-                weight: parseFloat(document.getElementById('weight').value),
-                price: parseFloat(document.getElementById('price').value),
-                feedPrice: parseFloat(document.getElementById('feedPrice').value),
-                careFee: parseFloat(document.getElementById('careFee').value) || 2.00,
-                medicine: parseFloat(document.getElementById('medicine').value) || 10.00,
-                transport: parseFloat(document.getElementById('transport').value) || 0.22,
-                dailyFeed: parseFloat(document.getElementById('dailyFeed').value) || 7.0,
-                fcr1: parseFloat(document.getElementById('fcr1').value) || 3.75,
-                fcr2: parseFloat(document.getElementById('fcr2').value) || 4.10
+            // 输入验证
+            const requiredInputs = [
+                'purchaseHeads', 'weight', 'purchasePrice', 'feedPrice', 'salePrice',
+                'dailyFeed', 'fosteringFee', 'medicineFee', 'transportFee',
+                'fcr1', 'fcr2', 'death1', 'death2'
+            ];
+            
+            let params = {};
+            try {
+                requiredInputs.forEach(id => {
+                    const input = document.getElementById(id);
+                    const value = parseFloat(input.value);
+                    if (isNaN(value)) throw `请输入有效的${input.previousElementSibling.innerText}`;
+                    params[id] = value;
+                });
+            } catch (err) {
+                showWarning(err);
+                return;
+            }
+
+            // 转换参数
+            const config = {
+                heads:          params.purchaseHeads,
+                initWeight:     params.weight,
+                price:          params.purchasePrice,
+                feedPrice:      params.feedPrice,
+                salePrice:      params.salePrice,
+                dailyFeed:      params.dailyFeed,
+                fosterFee:      params.fosteringFee,
+                medicineFee:    params.medicineFee,
+                transportFee:   params.transportFee,
+                fcrStage1:      params.fcr1,
+                fcrStage2:      params.fcr2,
+                deathStage1:    params.death1 / 100,
+                deathStage2:    params.death2 / 100
             };
 
-            // 需要计算的时间点
-            const daysList = [10, 20, 30, 40, 50, 60, 70];
-            const formatter = new Intl.NumberFormat('zh-CN', {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
+            // 初始化状态
+            let state = {
+                day: 0,
+                alive: config.heads,
+                totalWeight: config.heads * config.initWeight,
+                cumulativeDeath: 0,
+                totalCost: 0,
+                deadRecords: []
+            };
+
+            // 死亡率计算（基于初始头数）
+            const totalDeathStage1 = Math.ceil(config.heads * config.deathStage1);
+            const dailyDeathStage1 = totalDeathStage1 / 30;
+            const totalDeathStage2 = Math.ceil(config.heads * config.deathStage2);
+            const dailyDeathStage2 = totalDeathStage2 / 40;
+
+            // 处理检查点
+            const checkpoints = [10, 20, 30, 40, 50, 60, 70];
+            const results = [];
+            
+            checkpoints.forEach(targetDay => {
+                while (state.day < targetDay) {
+                    state.day++;
+                    const isStage1 = state.day <= 30;
+                    const dailyDeath = isStage1 ? dailyDeathStage1 : dailyDeathStage2;
+
+                    // 死亡处理
+                    state.cumulativeDeath += dailyDeath;
+                    if (state.cumulativeDeath >= 1) {
+                        const deaths = Math.min(
+                            Math.floor(state.cumulativeDeath),
+                            state.alive
+                        );
+                        state.alive -= deaths;
+                        state.cumulativeDeath -= deaths;
+                        if (deaths > 0) {
+                            state.deadRecords.push({
+                                day: state.day,
+                                heads: deaths
+                            });
+                        }
+                    }
+
+                    // 存活猪处理
+                    if (state.alive > 0) {
+                        const FCR = isStage1 ? config.fcrStage1 : config.fcrStage2;
+                        const feedCost = state.alive * config.dailyFeed * config.feedPrice;
+                        const fosterCost = state.alive * config.fosterFee;
+                        state.totalCost += feedCost + fosterCost;
+                        state.totalWeight += (state.alive * config.dailyFeed) / FCR;
+                    }
+                }
+                recordResult(state, config, results, targetDay);
             });
 
-            daysList.forEach(days => {
-                // 阶段划分
-                const stage1Days = Math.min(days, 30);
-                const stage2Days = Math.max(days - 30, 0);
+            displayResults(results);
+        }
 
-                // 计算各阶段数据
-                const calculateStage = (days, fcr) => ({
-                    feed: params.dailyFeed * days,
-                    gain: (params.dailyFeed * days) / fcr
-                });
+        function recordResult(state, config, results, targetDay) {
+            // 固定成本
+            const fixedCost = 
+                config.heads * config.initWeight * (config.price + config.transportFee) +
+                config.heads * config.medicineFee;
 
-                const stage1 = calculateStage(stage1Days, params.fcr1);
-                const stage2 = calculateStage(stage2Days, params.fcr2);
+            // 死亡猪饲料成本
+            const deadFeedCost = state.deadRecords.reduce(
+                (sum, r) => sum + (r.heads * r.day * config.dailyFeed * config.feedPrice),
+                0
+            );
 
-                // 总成本计算
-                const totalCost = 
-                    params.weight * (params.price + params.transport) +
-                    params.medicine +
-                    params.careFee * days +
-                    (stage1.feed + stage2.feed) * params.feedPrice;
+            // 总成本
+            const totalCost = fixedCost + state.totalCost + deadFeedCost;
+            
+            // 销售数据
+            const avgWeight = state.alive > 0 ? state.totalWeight / state.alive : 0;
+            const sales = state.alive * avgWeight * config.salePrice;
+            const profit = sales - totalCost;
+            
+            // 头均数据
+            const costPerHead = state.alive > 0 ? totalCost / state.alive : 0;
+            const profitPerHead = state.alive > 0 ? profit / state.alive : 0;
+            const salesPerHead = state.alive > 0 ? sales / state.alive : 0;
 
-                // 最终重量
-                const finalWeight = params.weight + stage1.gain + stage2.gain;
+            // 单位成本（调整到最后一列）
+            const unitCost = state.alive > 0 ? totalCost / state.totalWeight : Infinity;
 
-                // 单位成本
-                const unitCost = totalCost / finalWeight;
-
-                // 更新显示
-                document.getElementById(`total-${days}`).textContent = formatter.format(totalCost);
-                const unitElement = document.getElementById(`unit-${days}`);
-                unitElement.textContent = formatter.format(unitCost);
-                
-                // 设置颜色
-                unitElement.classList.remove('positive', 'negative');
-                unitElement.classList.add(unitCost < params.price ? 'positive' : 'negative');
+            results.push({
+                day: targetDay,
+                alive: state.alive,
+                avgWeight,
+                totalCost,
+                sales,
+                profit,
+                costPerHead,
+                profitPerHead,
+                salesPerHead,
+                unitCost  // 单位成本放在最后
             });
+        }
+
+        function displayResults(results) {
+            const tbody = document.querySelector('#resultTable tbody');
+            tbody.innerHTML = results.map(r => `
+                <tr>
+                    <td>${r.day}</td>
+                    <td>${r.alive}</td>
+                    <td>${r.avgWeight.toFixed(2)}</td>
+                    <td class="currency">${r.totalCost.toFixed(2)}</td>
+                    <td class="currency">${r.sales.toFixed(2)}</td>
+                    <td class="currency">${r.profit.toFixed(2)}</td>
+                    <td class="currency">${r.costPerHead.toFixed(2)}</td>
+                    <td class="currency">${r.profitPerHead.toFixed(2)}</td>
+                    <td class="currency">${r.salesPerHead.toFixed(2)}</td>
+                    <td>${r.unitCost.toFixed(2)}</td>
+                </tr>
+            `).join('');
+        }
+
+        function showWarning(message) {
+            const warningDiv = document.getElementById('warning');
+            warningDiv.textContent = message;
+            setTimeout(() => warningDiv.textContent = '', 3000);
         }
     </script>
 </body>
